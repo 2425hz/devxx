@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DevX</title><meta name="theme-color" content="#1e1f22"><link rel="icon" href="logo.png"><link rel="manifest" href="/manifest.json"><link rel="apple-touch-icon" href="/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1e1f22;--panel:#2b2d31;--panel2:#313338;--line:#3f4147;--text:#f2f3f5;--muted:#b5bac1;--dim:#80848e;--blurple:#5865f2;--blurple-h:#4752c4;--red:#f23f43;--font:"Noto Sans","Helvetica Neue",Arial,sans-serif}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--text);font:400 15px/1.5 var(--font)}
+a{color:#00a8fc}.muted{color:var(--muted);font-size:14px}
+.btn,.ua button,.pa button{font:600 14px var(--font);border:0;border-radius:4px;cursor:pointer}
+.btn{padding:9px 18px;background:var(--blurple);color:#fff}.btn:hover{background:var(--blurple-h)}.btn.grey{background:#4e5058}
+input,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:4px;color:var(--text);font:inherit;padding:10px 12px;margin-bottom:10px}
+input:focus,textarea:focus{outline:2px solid #00a8fc}
+.auth{max-width:380px;margin:8vh auto;padding:28px;background:var(--panel);border:1px solid var(--line);border-radius:8px;text-align:center}
+.auth h1{font-size:22px;margin:12px 0 16px}.auth .btn{width:100%;margin-bottom:12px}.alogo{width:96px;height:96px;border-radius:50%}
+.err{color:var(--red);min-height:20px;font-size:14px;margin-bottom:8px}
+.shell{display:grid;grid-template-columns:220px minmax(0,600px);justify-content:center;min-height:100vh}
+.side{position:sticky;top:0;height:100vh;padding:20px 12px;border-right:1px solid #111214;display:flex;flex-direction:column;gap:2px}
+.slogo{width:52px;height:52px;border-radius:12px;margin:0 0 14px 8px}
+.side a{padding:9px 12px;border-radius:4px;color:var(--muted);font-weight:600;cursor:pointer;text-decoration:none}
+.side a:hover,.side a.on{background:#404249;color:var(--text)}.me{margin-top:auto;padding:8px 12px;color:var(--muted);font-size:14px}
+main{border-right:1px solid #111214;min-height:100vh}
+.title{padding:16px;font-size:20px;border-bottom:1px solid var(--line)}
+.comp{padding:14px 16px;border-bottom:1px solid var(--line)}.comp textarea{height:80px;resize:none;margin-bottom:6px}.cr{display:flex;justify-content:space-between;align-items:center}
+.post{padding:14px 16px;border-bottom:1px solid var(--line);cursor:pointer}.post:hover{background:var(--panel)}
+.ph{display:flex;align-items:center;gap:6px}.pb{margin:4px 0 8px;white-space:pre-wrap;word-break:break-word}
+.pa{display:flex;gap:6px}.pa button{background:none;color:var(--muted);padding:4px 10px}.pa button:hover{background:var(--panel2);color:var(--text)}.pa .liked{color:#f91880}
+.tag{font-size:11px;font-weight:700;background:var(--blurple);border-radius:4px;padding:1px 6px}.tag.red{background:var(--red)}
+.chk{width:18px;height:18px}.chk.blue{fill:#1d9bf0}.chk.gold{fill:#f0b232}
+.warn{background:#4a3b12;border-bottom:1px solid #f0b232;padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+.back{margin:12px 16px}
+.u{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.ua{display:flex;flex-wrap:wrap;gap:6px}.ua button{background:var(--panel2);color:var(--text);padding:6px 10px}.ua button:hover{background:#404249}.ua .danger{background:var(--red)}
+@media(max-width:700px){.shell{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;border-right:0;border-bottom:1px solid #111214}.slogo{margin:0 8px 0 0;width:36px;height:36px}.me{margin:0 0 0 auto}}
+</style></head><body><div id="app"></div>
+<script>
+const $=s=>document.querySelector(s);
+const api=async(p,m='GET',b)=>{const r=await fetch('/api/'+p,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Error');return j};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const chk=b=>b?`<svg class="chk ${b}" viewBox="0 0 24 24" aria-label="${b} verified"><path d="M12 1l2.6 2 3.3-.2 1.2 3.1 2.8 1.8-.9 3.2.9 3.2-2.8 1.8-1.2 3.1-3.3-.2L12 23l-2.6-2-3.3.2-1.2-3.1L2.100 16.300 3 13.100 2.100 9.900l2.800-1.800 1.200-3.100 3.300.2z"/><path d="M8 12.300l2.600 2.600L16 9.500" fill="none" stroke="#fff" stroke-width="2.200"/></svg>`:'';
+const ago=t=>{const d=(Date.now()-t)/1e3;return d<60?'now':d<3600?(d/60|0)+'m':d<86400?(d/3600|0)+'h':new Date(t).toLocaleDateString()};
+let me=null,view='home',tid=0;const app=$('#app');
+
+function authUI(step='login',email=''){
+  const code=step==='code',reg=step==='register';
+  app.innerHTML=`<div class="auth"><img src="logo.png" class="alogo" alt="DevX"><h1>${code?'Enter your code':reg?'Join DevX':'Sign in to DevX'}</h1><form id="f">`+
+  (code?`<p class="muted" style="margin-bottom:10px">We sent a 6-digit code to ${esc(email)}</p><input id="code" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" required>`
+  :`<input id="email" type="email" placeholder="Email" required>`+(reg?`<input id="user" placeholder="Username" pattern="[A-Za-z0-9_]{3,15}" title="3-15 letters, numbers or _" required>`:'')+`<input id="pw" type="password" placeholder="Password (min 8)" minlength="8" required>`)+
+  `<div class="err" id="err"></div><button class="btn">${code?'Verify':reg?'Create account':'Continue'}</button></form>`+
+  (code?'':`<p class="muted">${reg?'Have an account? <a href="#" id="sw">Sign in</a>':'New here? <a href="#" id="sw">Create account</a>'}</p>`)+`</div>`;
+  if($('#sw'))$('#sw').onclick=e=>{e.preventDefault();authUI(reg?'login':'register')};
+  $('#f').onsubmit=async e=>{e.preventDefault();$('#err').textContent='';
+    try{if(code){await api('verify','POST',{email,code:$('#code').value.trim()});boot()}
+    else{const em=$('#email').value;await api(step,'POST',{email:em,password:$('#pw').value,username:reg?$('#user').value:undefined});authUI('code',em)}}
+    catch(x){$('#err').textContent=x.message}}}
+
+const post=p=>`<article class="post" data-id="${p.id}"><div class="ph"><b>@${esc(p.username)}</b>${chk(p.badge)}${p.role==='admin'?'<span class="tag">Admin</span>':''}<span class="muted">· ${ago(p.created)}</span></div><div class="pb">${esc(p.body)}</div><div class="pa"><button data-a="open">💬 ${p.replies}</button><button data-a="like" class="${p.liked?'liked':''}">${p.liked?'♥':'♡'} ${p.likes}</button>${p.username===me.username||me.role==='admin'?'<button data-a="del">Delete</button>':''}</div></article>`;
+const comp=r=>`<div class="comp"><textarea id="t" maxlength="280" placeholder="${r?'Post your reply':'What is happening?'}"></textarea><div class="cr"><span class="muted" id="n">280</span><button class="btn" id="go">${r?'Reply':'Post'}</button></div></div>`;
+
+function shell(){
+  app.innerHTML=`<div class="shell"><nav class="side"><img class="slogo" src="logo.png" alt="DevX"><a data-v="home">Home</a>${me.role==='admin'?'<a data-v="admin">Admin panel</a>':''}<a id="out">Log out</a><div class="me">@${esc(me.username)}${chk(me.badge)}</div></nav><main id="main"></main></div>`;
+  document.querySelectorAll('.side [data-v]').forEach(a=>a.onclick=()=>{view=a.dataset.v;tid=0;render()});
+  $('#out').onclick=async()=>{await api('logout','POST');me=null;authUI()};
+  $('#main').onclick=onMain;
+}
+async function render(){
+  document.querySelectorAll('.side [data-v]').forEach(a=>a.classList.toggle('on',a.dataset.v===view));
+  let h=me.warning?`<div class="warn"><span>⚠ Warning from the admins: ${esc(me.warning)}</span><button class="btn grey" id="ack">OK</button></div>`:'';
+  try{
+    if(view==='admin'){
+      const us=await api('admin/users');
+      h+='<h2 class="title">Admin panel</h2>'+us.map(u=>`<div class="u" data-id="${u.id}"><div><b>@${esc(u.username)}</b>${chk(u.badge)} ${u.role==='admin'?'<span class="tag">Admin</span>':''}${u.banned?'<span class="tag red">Banned</span>':''}<div class="muted">${esc(u.email)}</div></div>`+(u.role==='admin'?'':`<div class="ua"><button data-x="badge:blue">Blue ✓</button><button data-x="badge:gold">Gold ✓</button><button data-x="badge:">Remove ✓</button><button data-x="warn">Warn</button><button data-x="kick">Kick</button><button data-x="${u.banned?'unban':'ban'}" class="danger">${u.banned?'Unban':'Ban'}</button></div>`)+'</div>').join('');
+    }else{
+      const root=tid?await api('posts/'+tid):null,list=await api('posts'+(tid?'?parent='+tid:''));
+      h+=(tid?'<button class="btn grey back" id="back">← Back</button>'+post(root):'<h2 class="title">Home</h2>')+comp(tid)+list.map(post).join('');
+    }
+  }catch(x){h+=`<p class="comp err">${esc(x.message)}</p>`}
+  $('#main').innerHTML=h;
+  const t=$('#t');if(t){t.oninput=()=>$('#n').textContent=280-t.value.length;$('#go').onclick=async()=>{try{await api('posts','POST',{body:t.value,parent:tid||null});render()}catch(x){alert(x.message)}}}
+  if($('#back'))$('#back').onclick=()=>{tid=0;render()};
+  if($('#ack'))$('#ack').onclick=async()=>{await api('ack','POST');me=await api('me');render()};
+}
+async function onMain(e){
+  const b=e.target.closest('button[data-a],button[data-x]'),p=e.target.closest('.post'),u=e.target.closest('.u');
+  try{
+    if(b&&b.dataset.x){let[a,v]=b.dataset.x.split(':');if(a==='warn'){v=prompt('Warning message for this user:');if(v===null)return}
+      await api('admin/users/'+u.dataset.id,'POST',{action:a,value:v});render()}
+    else if(b&&p){const id=p.dataset.id;
+      if(b.dataset.a==='like'){await api('like/'+id,'POST');render()}
+      else if(b.dataset.a==='del'){if(confirm('Delete this post?')){await api('posts/'+id,'DELETE');if(+id===tid)tid=0;render()}}
+      else{tid=+id;render()}}
+    else if(p){tid=+p.dataset.id;render()}
+  }catch(x){alert(x.message)}
+}
+async function boot(){try{me=await api('me');shell();render()}catch{authUI()}}
+boot();
+if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js");
+</script></body></html>
